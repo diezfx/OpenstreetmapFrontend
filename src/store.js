@@ -3,6 +3,8 @@ import Vuex from 'vuex'
 
 Vue.use(Vuex)
 
+
+
 export const store = new Vuex.Store({
     state: {
         start: {
@@ -14,7 +16,9 @@ export const store = new Vuex.Store({
             lon: ''
         },
         selected: 'start',
-        mymap: null
+        mymap: null,
+        calcClicked: 0,
+        route: null
     },
     mutations: {
         changeStart(state, { lat, lon }) {
@@ -34,6 +38,9 @@ export const store = new Vuex.Store({
 
         setMap(state, map) {
             state.map = map
+        },
+        calcClicked(state) {
+            state.calcClicked += 1
         },
 
         changeSelected(state, selected) {
@@ -55,8 +62,30 @@ export const store = new Vuex.Store({
             else {
                 state.goal = coords
             }
+        },
+
+        setRoute(state, newRoute) {
+            state.route = newRoute
+            console.log("test")
         }
 
     },
+    actions: {
+        requestWay(context) {
+
+            let state = context.state
+
+            let queryString = `?startlat=${state.start.lat};startlon=${state.start.lon};endlat=${state.goal.lat};endlon=${state.goal.lon}`
+
+
+            fetch('http://localhost:8000/v1/route' + queryString)
+                .then(function (response) {
+                    return response.json();
+                })
+                .then(function (myJson) {
+                    context.commit("setRoute",myJson['Route'])
+                });
+        }
+    }
 
 })

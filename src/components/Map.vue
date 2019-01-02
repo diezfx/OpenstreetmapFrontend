@@ -1,5 +1,5 @@
 <template>
-  <div class="map">
+  <div class="map bg-1">
     <div id="mapid"></div>
     <button @click="test">test</button>
   </div>
@@ -12,10 +12,18 @@ export default {
   props: {},
   computed: {
     start() {
-      return this.$store.getters.start;
+      return this.$store.state.start;
     },
     goal() {
-      return this.$store.getters.goal;
+      return this.$store.state.goal;
+    },
+
+    calcClick() {
+      return this.$store.state.calcClicked;
+    },
+    route(){
+      console.log("test")
+      return this.$store.state.route
     }
   },
   data() {
@@ -25,9 +33,7 @@ export default {
     test() {
       this.$store.commit("changeStartLon", 25325235);
     },
-    test2(e) {
-      console.log(e);
-    },
+
     onMapClick(e) {
       this.$store.commit("setSelected", {
         lat: e.latlng.lat,
@@ -38,7 +44,7 @@ export default {
   },
 
   mounted() {
-    this.$store.map = L.map("mapid").setView([51.505, -0.09], 13);
+    this.$store.map = L.map("mapid").setView([48.742211, 9.206802], 13);
 
     this.$store.map.on("click", this.onMapClick);
 
@@ -53,6 +59,10 @@ export default {
         id: "mapbox.streets"
       }
     ).addTo(this.$store.map);
+  },
+  watch: {
+    calcClick() {
+    }
   }
 };
 </script>

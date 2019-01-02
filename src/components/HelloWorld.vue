@@ -1,35 +1,24 @@
 <template>
   <div class="route-input">
-    <div class="row">
-      <div class="col-9">
-        <div class="form-row">
-          <div class="col">
-            <label for="lat" class="col-form-label">Start:</label>
-          </div>
-          <div class="col">
-            <input v-model="startLat" type="number" class="form-control in-1" id="lat" placeholder="Latitude">
-          </div>
-          <div class="col">
-            <input v-model="startLon" type="number" class="form-control in-1" id="long" placeholder="Longitude">
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="col">
-            <label for="lat" class="col-form-label">Target:</label>
-          </div>
-          <div class="col">
-            <input v-model="goalLat" type="number" class="form-control in-1" id="lat" placeholder="Latitude">
-          </div>
-          <div class="col">
-            <input v-model="goalLon" type="number" class="form-control in-1" id="long" placeholder="Longitude">
-          </div>
-        </div>
-      </div>
+    <v-btn
+      color="#afbfc7"
+      v-bind:class="{'v-btn--active': $store.state.selected==='start'?true:false}"
+      @click="$store.commit('changeSelected','start')"
+      class="start"
+    >Start</v-btn>
+    <v-text-field label="Latitude" class="in-1" v-model="startLat"></v-text-field>
+    <v-text-field label="Longitude" class="in-1" v-model="startLon"></v-text-field>
+    <v-btn
+      color="#afbfc7"
+      v-bind:class="{'v-btn--active': $store.state.selected==='goal'?true:false}"
+      @click="$store.commit('changeSelected','goal')"
+      class="goal"
+    >Goal:</v-btn>
 
-      <div class="col-3">
-        <button @click="clicked" class="btn btn-dark" id="buttonInput">Calculate</button>
-      </div>
-    </div>
+    <v-text-field label="Latitude" class="in-1" v-model="goalLat"></v-text-field>
+    <v-text-field label="Longitude" class="in-1" v-model="goalLon"></v-text-field>
+
+    <button @click="clicked" class="btn-dark" id="buttonInput">Calculate</button>
   </div>
 </template>
 
@@ -48,7 +37,7 @@ export default {
         return this.$store.state.start.lat;
       },
       set(v) {
-        this.$store.commit("changeStart", {lat:v});
+        this.$store.commit("changeStart", { lat: v });
       }
     },
     startLon: {
@@ -56,7 +45,7 @@ export default {
         return this.$store.state.start.lon;
       },
       set(v) {
-        this.$store.commit("changeStart", {lon:v});
+        this.$store.commit("changeStart", { lon: v });
       }
     },
     goalLat: {
@@ -64,7 +53,7 @@ export default {
         return this.$store.state.goal.lat;
       },
       set(v) {
-        this.$store.commit("changeGoal", {lat:v});
+        this.$store.commit("changeGoal", { lat: v });
       }
     },
     goalLon: {
@@ -72,52 +61,63 @@ export default {
         return this.$store.state.goal.lon;
       },
       set(v) {
-        this.$store.commit("changeGoal", {lon:v});
+        this.$store.commit("changeGoal", { lon: v });
       }
     }
   },
 
   methods: {
     clicked() {
-      this.$emit("click");
-    }
+      if (this.goalLon == "" || this.goalLat == "") {
+        this.$store.map.panTo([this.startLat, this.startLon]);
+      } else {
+        this.$store.commit("calcClicked");
+        this.$store.dispatch("requestWay");
+      }
 
+    }
   }
 };
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style >
+<style>
+.route-input {
+  display: grid;
+  grid-template-columns: auto auto auto 100 px;
+  grid-template-rows: auto auto auto;
+  grid-template-areas:
+    "start input input button"
+    "goal input input button"
+    ". . . .";
+}
+
+.start {
+  grid-area: "start";
+  align-self: center;
+}
+.goal {
+  grid-area: "goal";
+  align-self: center;
+}
+
+.v-btn--active {
+  background-color: #009688 !important;
+}
+
 .bg-1 {
   background: #b2dfdb;
   color: #ffffff;
 }
 
 .bg-2 {
-  background-color: #00796b;
+  background-color: #1a237e;
   color: #ffffff;
 }
 
-.form-control::focus {
-  color: #123123;
-}
-
-.form-control::placeholder {
-  color: white;
-}
-
-.container-fluid {
-  padding-top: 1em;
-  padding-bottom: 0.5em;
-}
-
-.btn {
-  background: #607d8b;
-  height: 100%;
-}
 .in-1 {
-  background: #009688;
-  color: #ffffff;
+  width: auto;
+  padding: 2em;
 }
 
 .btn-dark {
@@ -125,16 +125,9 @@ export default {
   margin-bottom: 1rem;
 
   vertical-align: middle;
+  align-self: center;
 
-  height: 2.5rem;
-}
-
-.well {
-  background-color: rgba(0, 5, 0, 0.47);
-  margin-top: 1rem;
-  margin-bottom: 1rem;
-  height: 2.5rem;
-  line-height: 2.5rem;
-  padding-left: 0.5rem;
+  height: 5rem;
+  grid-area: button;
 }
 </style>

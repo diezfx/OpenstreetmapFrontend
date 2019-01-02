@@ -1,14 +1,12 @@
 <template>
   <div id="app">
-    <div class="container-fluid bg-2">
-      <div class="container bg-2">
-        <HelloWorld  v-on:click="calculate" msg="Welcome to Your Vue.js App"/>
+    <div class="container-fluid">
+      <div class="container">
+        <HelloWorld v-on:click="calculate" msg="Welcome to Your Vue.js App"/>
       </div>
 
-      <div class="row">
-        <div class="col-9">
-          <Map/>
-        </div>
+      <div class="col-9">
+        <Map/>
       </div>
     </div>
   </div>
@@ -18,24 +16,20 @@
 import HelloWorld from "./components/HelloWorld.vue";
 import Map from "./components/Map.vue";
 
-
 export default {
   name: "app",
   components: {
     HelloWorld,
     Map
   },
-  methods:{
-    calculate(){
-  
-
-    }
+  methods: {
+    calculate() {}
   },
-  data(){
-    return {
-  
-    }
-  }
+  data() {
+    return {};
+  },
+  computed: {},
+  mounted() {}
 };
 </script>
 
@@ -46,7 +40,6 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-
 }
 
 .row {
