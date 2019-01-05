@@ -37,7 +37,7 @@ export const store = new Vuex.Store({
         },
 
         setMap(state, map) {
-            state.map = map
+        state.map = map
         },
         calcClicked(state) {
             state.calcClicked += 1
@@ -65,8 +65,8 @@ export const store = new Vuex.Store({
         },
 
         setRoute(state, newRoute) {
+            
             state.route = newRoute
-            console.log("test")
         }
 
     },
@@ -83,7 +83,7 @@ export const store = new Vuex.Store({
                     return response.json();
                 })
                 .then(function (myJson) {
-                    context.commit("setRoute",myJson['Route'])
+                    context.commit("setRoute", myJson['Route'])
                 });
         }
     }

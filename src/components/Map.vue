@@ -1,7 +1,6 @@
 <template>
   <div class="map bg-1">
     <div id="mapid"></div>
-    <button @click="test">test</button>
   </div>
 </template>
 
@@ -17,23 +16,20 @@ export default {
     goal() {
       return this.$store.state.goal;
     },
-
-    calcClick() {
-      return this.$store.state.calcClicked;
+    route() {
+      return this.$store.state.route;
     },
-    route(){
-      console.log("test")
-      return this.$store.state.route
+
+    map() {
+      return this.$store.state.map;
     }
   },
   data() {
-    return {};
+    return {
+      myLayer: null
+    };
   },
   methods: {
-    test() {
-      this.$store.commit("changeStartLon", 25325235);
-    },
-
     onMapClick(e) {
       this.$store.commit("setSelected", {
         lat: e.latlng.lat,
@@ -44,9 +40,12 @@ export default {
   },
 
   mounted() {
-    this.$store.map = L.map("mapid").setView([48.742211, 9.206802], 13);
+    this.$store.commit(
+      "setMap",
+      L.map("mapid").setView([48.742211, 9.206802], 13)
+    );
 
-    this.$store.map.on("click", this.onMapClick);
+    this.map.on("click", this.onMapClick);
 
     L.tileLayer(
       "https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw",
@@ -58,10 +57,22 @@ export default {
           'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
         id: "mapbox.streets"
       }
-    ).addTo(this.$store.map);
+    ).addTo(this.map);
   },
   watch: {
-    calcClick() {
+    route() {
+      // delete old route
+
+      if(this.myLayer!=null){
+      this.map.removeLayer(this.myLayer);
+
+      }
+
+      if (this.route != null) {
+        console.log(this.route);
+        this.myLayer = L.geoJSON().addTo(this.map);
+        this.myLayer.addData(this.route);
+      }
     }
   }
 };
