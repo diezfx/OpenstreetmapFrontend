@@ -18,15 +18,13 @@ export default {
     },
     route() {
       return this.$store.state.route;
-    },
-
-    map() {
-      return this.$store.state.map;
     }
   },
   data() {
     return {
-      myLayer: null
+      myLayer: null,
+      map:null
+
     };
   },
   methods: {
@@ -40,10 +38,7 @@ export default {
   },
 
   mounted() {
-    this.$store.commit(
-      "setMap",
-      L.map("mapid").setView([48.742211, 9.206802], 13)
-    );
+    this.map=L.map("mapid").setView([48.742211, 9.206802], 13)
 
     this.map.on("click", this.onMapClick);
 
@@ -63,13 +58,11 @@ export default {
     route() {
       // delete old route
 
-      if(this.myLayer!=null){
-      this.map.removeLayer(this.myLayer);
-
+      if (this.myLayer != null) {
+        this.map.removeLayer(this.myLayer);
       }
 
       if (this.route != null) {
-        console.log(this.route);
         this.myLayer = L.geoJSON().addTo(this.map);
         this.myLayer.addData(this.route);
       }

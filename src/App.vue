@@ -7,6 +7,7 @@
 
       <div class="col-9">
         <Map/>
+        <Info/>
       </div>
     </div>
   </div>
@@ -15,12 +16,14 @@
 <script>
 import HelloWorld from "./components/HelloWorld.vue";
 import Map from "./components/Map.vue";
+import Info from "./components/Info.vue";
 
 export default {
   name: "app",
   components: {
     HelloWorld,
-    Map
+    Map,
+    Info
   },
   methods: {
     calculate() {}

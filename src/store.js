@@ -18,7 +18,8 @@ export const store = new Vuex.Store({
         selected: 'start',
         mymap: null,
         calcClicked: 0,
-        route: null
+        route: null,
+        info: null
     },
     mutations: {
         changeStart(state, { lat, lon }) {
@@ -36,9 +37,6 @@ export const store = new Vuex.Store({
                 state.goal.lon = lon
         },
 
-        setMap(state, map) {
-        state.map = map
-        },
         calcClicked(state) {
             state.calcClicked += 1
         },
@@ -65,8 +63,11 @@ export const store = new Vuex.Store({
         },
 
         setRoute(state, newRoute) {
-            
+
             state.route = newRoute
+        },
+        setInfo(state, newInfo) {
+            state.info = newInfo
         }
 
     },
@@ -85,6 +86,16 @@ export const store = new Vuex.Store({
                 .then(function (myJson) {
                     context.commit("setRoute", myJson['Route'])
                 });
+        },
+        requestMetaInfo(context) {
+            fetch('http://localhost:8000/v1/info').then(function (response) {
+                return response.json();
+            })
+                .then(function (myJson) {
+                    context.commit("setInfo", myJson)
+                });
+
+
         }
     }
 
