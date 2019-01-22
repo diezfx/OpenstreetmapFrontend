@@ -69,6 +69,7 @@ export default {
   methods: {
     clicked() {
       if (this.goalLon == "" || this.goalLat == "") {
+        //todo fix
         this.$store.map.panTo([this.startLat, this.startLon]);
       } else {
         this.$store.commit("calcClicked");

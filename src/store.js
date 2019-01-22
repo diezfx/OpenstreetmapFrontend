@@ -19,7 +19,8 @@ export const store = new Vuex.Store({
         mymap: null,
         calcClicked: 0,
         route: null,
-        info: null
+        info: null,
+        stations: null
     },
     mutations: {
         changeStart(state, { lat, lon }) {
@@ -68,6 +69,9 @@ export const store = new Vuex.Store({
         },
         setInfo(state, newInfo) {
             state.info = newInfo
+        },
+        setStations(state, newStations) {
+            state.stations = newStations
         }
 
     },
@@ -76,7 +80,7 @@ export const store = new Vuex.Store({
 
             let state = context.state
 
-            let queryString = `?startlat=${state.start.lat};startlon=${state.start.lon};endlat=${state.goal.lat};endlon=${state.goal.lon}`
+            let queryString = `?startlat=${state.start.lat}&startlon=${state.start.lon}&endlat=${state.goal.lat}&endlon=${state.goal.lon}`
 
 
             fetch('http://localhost:8000/v1/route' + queryString)
@@ -94,6 +98,18 @@ export const store = new Vuex.Store({
                 .then(function (myJson) {
                     context.commit("setInfo", myJson)
                 });
+
+
+        },
+        requestStations(context,bounds) {
+            console.log(bounds)
+            let queryString= `?nelat=${bounds._northEast.lat}&nelon=${bounds._northEast.lng}&swlat=${bounds._southWest.lat}&swlon=${bounds._southWest.lng}`
+           
+            fetch('http://localhost:8000/v1/stations'+queryString).then((response) => { return response.json(); })
+                .then((myJson) => {
+                    context.commit("setStations", myJson)
+                })
+
 
 
         }
