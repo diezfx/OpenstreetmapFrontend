@@ -51,7 +51,7 @@ export default {
     getStationsOnEvent ()  {
       
       // check if zoom is too high ->would show too many stations -> dont show any
-      if (this.map.getZoom() < 10) {
+      if (this.map.getZoom() < 12) {
         this.$store.commit("setStations", null);
         return;
       }
@@ -108,7 +108,7 @@ export default {
         for (let node of this.stations.Stations) {
           marker.push(L.marker([node.lat, node.lon]));
           i++;
-          if (i > 500) break;
+          if (i > 400) break;
         }
 
         this.stationLayer = L.layerGroup(marker);
