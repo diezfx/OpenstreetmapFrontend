@@ -20,7 +20,8 @@ export const store = new Vuex.Store({
         calcClicked: 0,
         route: null,
         info: null,
-        stations: null
+        stations: null,
+        routeArea: null
     },
     mutations: {
         changeStart(state, { lat, lon }) {
@@ -72,6 +73,9 @@ export const store = new Vuex.Store({
         },
         setStations(state, newStations) {
             state.stations = newStations
+        },
+        setRouteArea(state, newRouteArea) {
+            state.routeArea = newRouteArea
         }
 
     },
@@ -101,17 +105,26 @@ export const store = new Vuex.Store({
 
 
         },
-        requestStations(context,bounds) {
+        requestStations(context, bounds) {
             console.log(bounds)
-            let queryString= `?nelat=${bounds._northEast.lat}&nelon=${bounds._northEast.lng}&swlat=${bounds._southWest.lat}&swlon=${bounds._southWest.lng}`
-           
-            fetch('http://localhost:8000/v1/stations'+queryString).then((response) => { return response.json(); })
+            let queryString = `?nelat=${bounds._northEast.lat}&nelon=${bounds._northEast.lng}&swlat=${bounds._southWest.lat}&swlon=${bounds._southWest.lng}`
+
+            fetch('http://localhost:8000/v1/stations' + queryString).then((response) => { return response.json(); })
                 .then((myJson) => {
                     context.commit("setStations", myJson)
                 })
 
 
 
+        },
+        requestRouteArea(context, bounds) {
+            console.log(bounds)
+            let queryString = `?nelat=${bounds._northEast.lat}&nelon=${bounds._northEast.lng}&swlat=${bounds._southWest.lat}&swlon=${bounds._southWest.lng}`
+
+            fetch('http://localhost:8000/v1/route/area' + queryString).then((response) => { return response.json(); })
+                .then((myJson) => {
+                    context.commit("setRouteArea", myJson)
+                })
         }
     }
 

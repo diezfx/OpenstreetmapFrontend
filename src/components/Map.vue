@@ -30,6 +30,9 @@ export default {
     },
     stations() {
       return this.$store.state.stations;
+    },
+    routeArea() {
+      return this.$store.state.routeArea;
     }
   },
 
@@ -37,6 +40,7 @@ export default {
     return {
       routeLayer: null,
       stationLayer: null,
+      routeAreaLayer: null,
       map: null
     };
   },
@@ -48,26 +52,30 @@ export default {
       });
       this.$store.commit("toggleSelected");
     },
-    getStationsOnEvent ()  {
-      
+    getStationsOnEvent() {
       // check if zoom is too high ->would show too many stations -> dont show any
-      if (this.map.getZoom() < 12) {
+      if (this.map.getZoom() < 10) {
         this.$store.commit("setStations", null);
         return;
       }
+
       let bound = this.map.getBounds();
-      console.log(bound)
-      this.$store.dispatch("requestStations",bound);
+      this.$store.dispatch("requestStations", bound);
+    },
+    getRoutesAreaOnEvent() {
+      // check if zoom is too high ->would show too many stations -> dont show any
+      if (this.map.getZoom() < 15) {
+        this.$store.commit("setRouteArea", null);
+        return;
+      }
+
+      let bound = this.map.getBounds();
+      this.$store.dispatch("requestRouteArea", bound);
     }
   },
 
   mounted() {
     this.map = L.map("mapid").setView([48.742211, 9.206802], 13);
-
-    this.map.on("click", this.onMapClick);
-    this.map.on("dragend", this.getStationsOnEvent.bind(this));
-    this.map.on("zoomend",this.getStationsOnEvent.bind(this));
-
     L.tileLayer(
       "https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw",
       {
@@ -80,7 +88,15 @@ export default {
       }
     ).addTo(this.map);
 
-    this.$store.dispatch("requestStations");
+    this.map.on("click", this.onMapClick);
+    this.map.on("dragend", this.getStationsOnEvent.bind(this));
+    this.map.on("zoomend", this.getStationsOnEvent.bind(this));
+    this.map.on("dragend", this.getRoutesAreaOnEvent.bind(this));
+    this.map.on("zoomend", this.getRoutesAreaOnEvent.bind(this));
+
+    let bounds = this.map.getBounds();
+    this.$store.dispatch("requestStations", bounds);
+    this.$store.dispatch("requestRouteArea", bounds);
   },
   watch: {
     route() {
@@ -96,24 +112,47 @@ export default {
       }
     },
     stations() {
-      console.log(this.stationLayer)
+      console.log(this.stations.Stations.length);
       if (this.stationLayer != null) {
-        console.log("hallooo")
         this.map.removeLayer(this.stationLayer);
       }
       let marker = [];
 
+      let zoomLevel = this.map.getZoom();
+
+      // scale radius
+      const scale = zoomLevel - 7;
+      // max zoom is 18 ;min8    now 1,10
+
+      const radius = scale * 2;
+
       if (this.stations != null) {
-        let i = 0;
         for (let node of this.stations.Stations) {
-          marker.push(L.marker([node.lat, node.lon]));
-          i++;
-          if (i > 400) break;
+          let options;
+          if (node.type == 1) {
+            options = { color: "#424ef4" };
+          } else {
+            options = { color: "#f44141" };
+          }
+
+          options.radius = 1;
+          marker.push(L.circleMarker([node.lat, node.lon], options));
         }
 
         this.stationLayer = L.layerGroup(marker);
 
         this.stationLayer.addTo(this.map);
+      }
+    },
+    routeArea() {
+      if (this.routeAreaLayer != null) {
+        this.map.removeLayer(this.routeAreaLayer);
+      }
+
+      console.log(this.routeArea.coordinates.length)
+      if (this.routeArea != null) {
+        this.routeAreaLayer = L.geoJSON().addTo(this.map);
+        this.routeAreaLayer.addData(this.routeArea);
       }
     }
   }
