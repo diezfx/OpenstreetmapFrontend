@@ -19,6 +19,7 @@ export const store = new Vuex.Store({
         mymap: null,
         calcClicked: 0,
         route: null,
+        routeStations: null,
         info: null,
         stations: null,
         routeArea: null
@@ -68,6 +69,10 @@ export const store = new Vuex.Store({
 
             state.route = newRoute
         },
+        setRouteWithStations(state, newRoute, stations) {
+            state.route = newRoute;
+            state.routeStations = stations;
+        },
         setInfo(state, newInfo) {
             state.info = newInfo
         },
@@ -92,6 +97,21 @@ export const store = new Vuex.Store({
                     return response.json();
                 })
                 .then(function (myJson) {
+                    context.commit("setRoute", myJson['Route'])
+                });
+        },
+        requestWayWithStations(context,rangeKm) {
+            let state = context.state
+
+            let queryString = `?startlat=${state.start.lat}&startlon=${state.start.lon}&endlat=${state.goal.lat}&endlon=${state.goal.lon}&rangeKm=${rangeKm}`
+
+           
+            fetch('http://localhost:8000/v1/routewithstation' + queryString)
+                .then(function (response) {
+                    return response.json();
+                })
+                .then(function (myJson) {
+                    console.log(myJson)
                     context.commit("setRoute", myJson['Route'])
                 });
         },

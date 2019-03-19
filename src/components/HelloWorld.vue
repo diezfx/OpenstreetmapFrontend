@@ -6,8 +6,8 @@
       @click="$store.commit('changeSelected','start')"
       class="start"
     >Start</v-btn>
-    <v-text-field label="Latitude" class="in-1" v-model="startLat"></v-text-field>
-    <v-text-field label="Longitude" class="in-1" v-model="startLon"></v-text-field>
+    <v-text-field label="Latitude" id="start1" class="in-1 start1" v-model="startLat"></v-text-field>
+    <v-text-field label="Longitude" id="start2" class="in-1 start2" v-model="startLon"></v-text-field>
     <v-btn
       color="#afbfc7"
       v-bind:class="{'v-btn--active': $store.state.selected==='goal'?true:false}"
@@ -15,8 +15,10 @@
       class="goal"
     >Goal:</v-btn>
 
-    <v-text-field label="Latitude" class="in-1" v-model="goalLat"></v-text-field>
-    <v-text-field label="Longitude" class="in-1" v-model="goalLon"></v-text-field>
+    <v-text-field label="Latitude" id="goal1" class="in-1 goal1" v-model="goalLat"></v-text-field>
+    <v-text-field label="Longitude" id="goal2" class="in-1 goal2" v-model="goalLon"></v-text-field>
+
+    <v-text-field label="Range in km (0=infinite)"  class="in-1 range" v-model="range"></v-text-field>
 
     <button @click="clicked" class="btn-dark" id="buttonInput">Calculate</button>
   </div>
@@ -29,7 +31,7 @@ export default {
     msg: String
   },
   data() {
-    return { test: "huhu" };
+    return { test: "huhu", range:0 };
   },
   computed: {
     startLat: {
@@ -71,11 +73,16 @@ export default {
       if (this.goalLon == "" || this.goalLat == "") {
         //todo fix
         this.$store.map.panTo([this.startLat, this.startLon]);
-      } else {
+      }else if(this.range>0){
+
+        this.$store.commit("calcClicked");
+        this.$store.dispatch("requestWayWithStations",this.range);
+
+      }
+       else {
         this.$store.commit("calcClicked");
         this.$store.dispatch("requestWay");
       }
-
     }
   }
 };
@@ -85,20 +92,20 @@ export default {
 <style>
 .route-input {
   display: grid;
-  grid-template-columns: auto auto auto 100 px;
+  grid-template-columns: auto auto auto auto 100 px;
   grid-template-rows: auto auto auto;
   grid-template-areas:
-    "start input input button"
-    "goal input input button"
-    ". . . .";
+    "start inputsl inputslo range button"
+    "goal inputgl inputglo input button"
+    ". . . . .";
 }
 
 .start {
-  grid-area: "start";
   align-self: center;
+  grid-area: start;
 }
 .goal {
-  grid-area: "goal";
+  grid-area: goal;
   align-self: center;
 }
 
@@ -106,14 +113,22 @@ export default {
   background-color: #009688 !important;
 }
 
-.bg-1 {
-  background: #b2dfdb;
-  color: #ffffff;
+.goal1 {
+  align-self: center;
+  grid-area: "inputgl";
 }
-
-.bg-2 {
-  background-color: #1a237e;
-  color: #ffffff;
+.goal2 {
+  align-self: center;
+  grid-area: "inputglo";
+}
+.start1 {
+  grid-area: "inputslo";
+}
+.start2 {
+  grid-area: inputslo;
+}
+.range{
+  grid-area:range;
 }
 
 .in-1 {
@@ -122,6 +137,7 @@ export default {
 }
 
 .btn-dark {
+  background-color: #2c2e5a;
   margin-top: 1rem;
   margin-bottom: 1rem;
 
