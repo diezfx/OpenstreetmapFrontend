@@ -19,6 +19,9 @@ L.Icon.Default.mergeOptions({
 export default {
   props: {},
   computed: {
+    layers() {
+      return this.$store.state.layers;
+    },
     start() {
       return this.$store.state.start;
     },
@@ -33,6 +36,9 @@ export default {
     },
     routeArea() {
       return this.$store.state.routeArea;
+    },
+    modus() {
+      return this.$store.state.modus;
     }
   },
 
@@ -52,25 +58,17 @@ export default {
       });
       this.$store.commit("toggleSelected");
     },
-    getStationsOnEvent() {
+    getInfosAreaOnEvent() {
       // check if zoom is too high ->would show too many stations -> dont show any
-      if (this.map.getZoom() < 10) {
+      if (this.map.getZoom() < 13) {
         this.$store.commit("setStations", null);
-        return;
-      }
-
-      let bound = this.map.getBounds();
-      this.$store.dispatch("requestStations", bound);
-    },
-    getRoutesAreaOnEvent() {
-      // check if zoom is too high ->would show too many stations -> dont show any
-      if (this.map.getZoom() < 15) {
         this.$store.commit("setRouteArea", null);
         return;
       }
 
       let bound = this.map.getBounds();
-      this.$store.dispatch("requestRouteArea", bound);
+      this.$store.commit("changeBounds", bound);
+      this.$store.dispatch("requestInfosArea");
     }
   },
 
@@ -89,16 +87,19 @@ export default {
     ).addTo(this.map);
 
     this.map.on("click", this.onMapClick);
-    this.map.on("dragend", this.getStationsOnEvent.bind(this));
-    this.map.on("zoomend", this.getStationsOnEvent.bind(this));
-    this.map.on("dragend", this.getRoutesAreaOnEvent.bind(this));
-    this.map.on("zoomend", this.getRoutesAreaOnEvent.bind(this));
+    this.map.on("dragend", this.getInfosAreaOnEvent.bind(this));
+    this.map.on("zoomend", this.getInfosAreaOnEvent.bind(this));
 
     let bounds = this.map.getBounds();
-    this.$store.dispatch("requestStations", bounds);
-    this.$store.dispatch("requestRouteArea", bounds);
+    this.$store.commit("changeBounds", bounds);
+    this.$store.dispatch("requestInfosArea");
   },
   watch: {
+    layers() {
+      if (layers.fullEdges === true) {
+      } else {
+      }
+    },
     route() {
       // delete old route
 
@@ -112,7 +113,6 @@ export default {
       }
     },
     stations() {
-      console.log(this.stations.Stations.length);
       if (this.stationLayer != null) {
         this.map.removeLayer(this.stationLayer);
       }
@@ -126,7 +126,30 @@ export default {
 
       const radius = scale * 2;
 
-      if (this.stations != null) {
+      if (this.stations == null) return;
+
+      if (this.layers.stations && this.modus === "stationsReach") {
+        for (let node of this.stations.unreachable.Stations) {
+          let options;
+
+          options = { color: "#424ef4" };
+
+          options.radius = 10;
+          marker.push(L.circleMarker([node.lat, node.lon], options));
+        }
+
+        for (let node of this.stations.reachable.Stations) {
+          let options;
+          options = { color: "#f44141" };
+
+          options.radius = 10;
+          marker.push(L.circleMarker([node.lat, node.lon], options));
+        }
+
+        this.stationLayer = L.layerGroup(marker);
+
+        this.stationLayer.addTo(this.map);
+      } else {
         for (let node of this.stations.Stations) {
           let options;
           if (node.type == 1) {
@@ -145,12 +168,12 @@ export default {
       }
     },
     routeArea() {
+      console.log(this.routeArea);
       if (this.routeAreaLayer != null) {
         this.map.removeLayer(this.routeAreaLayer);
       }
 
-      console.log(this.routeArea.coordinates.length)
-      if (this.routeArea != null) {
+      if (this.routeArea != null && this.layers.fullEdges) {
         this.routeAreaLayer = L.geoJSON().addTo(this.map);
         this.routeAreaLayer.addData(this.routeArea);
       }

@@ -1,10 +1,10 @@
 <template>
   <div id="app">
+    <FlashMessage/>
     <div class="container-fluid">
       <div class="container">
-        <HelloWorld v-on:click="calculate" msg="Welcome to Your Vue.js App"/>
+        <TopBar v-on:click="calculate" msg="Welcome to Your Vue.js App"/>
       </div>
-
       <div class="col-9">
         <Map/>
         <Info/>
@@ -14,13 +14,16 @@
 </template>
 
 <script>
+import TopBar from "./components/TopBar.vue";
+import FlashMessage from "./components/FlashMessage.vue";
 import HelloWorld from "./components/HelloWorld.vue";
 import Map from "./components/Map.vue";
 import Info from "./components/Info.vue";
-
 export default {
   name: "app",
   components: {
+    FlashMessage,
+    TopBar,
     HelloWorld,
     Map,
     Info
