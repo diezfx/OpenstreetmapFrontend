@@ -48,6 +48,7 @@ export default {
       } else {
         this.$store.commit("calcClicked");
         this.$store.dispatch("requestReachableStations");
+        this.$store.dispatch("requestReachableArea");
       }
     }
   }

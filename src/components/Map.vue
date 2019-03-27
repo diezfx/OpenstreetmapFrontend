@@ -47,27 +47,28 @@ export default {
       routeLayer: null,
       stationLayer: null,
       routeAreaLayer: null,
+      startGoalMarkerLayer: { start: null, goal: null },
       map: null
     };
   },
   methods: {
     onMapClick(e) {
-      this.$store.commit("setSelected", {
+      this.$store.dispatch("setStartGoal", {
         lat: e.latlng.lat,
         lon: e.latlng.lng
       });
-      this.$store.commit("toggleSelected");
     },
     getInfosAreaOnEvent() {
-      // check if zoom is too high ->would show too many stations -> dont show any
-      if (this.map.getZoom() < 13) {
+      let bound = this.map.getBounds();
+      this.$store.commit("changeBounds", bound);
+      // check if zoom is too high ->would show too many stations/ways -> dont show any
+      if (this.map.getZoom() < 15) {
         this.$store.commit("setStations", null);
         this.$store.commit("setRouteArea", null);
+
         return;
       }
 
-      let bound = this.map.getBounds();
-      this.$store.commit("changeBounds", bound);
       this.$store.dispatch("requestInfosArea");
     }
   },
@@ -91,14 +92,26 @@ export default {
     this.map.on("zoomend", this.getInfosAreaOnEvent.bind(this));
 
     let bounds = this.map.getBounds();
-    this.$store.commit("changeBounds", bounds);
-    this.$store.dispatch("requestInfosArea");
+    this.getInfosAreaOnEvent();
   },
   watch: {
-    layers() {
-      if (layers.fullEdges === true) {
-      } else {
+    start() {
+      if (this.startGoalMarkerLayer.start) {
+        this.map.removeLayer(this.startGoalMarkerLayer.start);
       }
+      const marker = L.marker([this.start.lat, this.start.lon]);
+      marker.addTo(this.map);
+
+      this.startGoalMarkerLayer.start = marker;
+    },
+    goal() {
+      if (this.startGoalMarkerLayer.goal) {
+        this.map.removeLayer(this.startGoalMarkerLayer.start);
+      }
+      const marker = L.marker([this.goal.lat, this.goal.lon]);
+      marker.addTo(this.map);
+
+      this.startGoalMarkerLayer.goal = marker;
     },
     route() {
       // delete old route
@@ -132,7 +145,7 @@ export default {
         for (let node of this.stations.unreachable.Stations) {
           let options;
 
-          options = { color: "#424ef4" };
+          options = { color: "#f44141" };
 
           options.radius = 10;
           marker.push(L.circleMarker([node.lat, node.lon], options));
@@ -140,7 +153,7 @@ export default {
 
         for (let node of this.stations.reachable.Stations) {
           let options;
-          options = { color: "#f44141" };
+          options = { color: "#424ef4" };
 
           options.radius = 10;
           marker.push(L.circleMarker([node.lat, node.lon], options));
@@ -174,8 +187,12 @@ export default {
       }
 
       if (this.routeArea != null && this.layers.fullEdges) {
-        this.routeAreaLayer = L.geoJSON().addTo(this.map);
-        this.routeAreaLayer.addData(this.routeArea);
+        this.routeAreaLayer = L.geoJSON(this.routeArea, {
+          style: function(feature) {
+            console.log(feature);
+            return { color: feature.geometry.style.color };
+          }
+        }).addTo(this.map);
       }
     }
   }

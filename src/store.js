@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import Vue from 'vue'
 import Vuex from 'vuex'
 
@@ -81,6 +82,10 @@ export const store = new Vuex.Store({
             else {
                 state.goal = coords
             }
+
+            if (state.modus != "stationsReach") {
+                this.$store.commit("toggleSelected");
+              }
         },
 
         setRoute(state, newRoute) {
@@ -107,6 +112,21 @@ export const store = new Vuex.Store({
 
     },
     actions: {
+
+        async setStartGoal(context,coords){
+
+
+            const queryString = `?lat=${coords.lat}&lon=${coords.lon}`
+
+            const response = await fetch('http://localhost:8000/v1/route/node'+queryString)
+            if (!response.ok) {
+                const myJson = await response.json();
+                context.commit("setNotification", myJson)
+                return
+            }
+            const myJson=await response.json();
+            context.commit("setSelected",myJson)
+        },
         async requestWay(context) {
 
             let state = context.state
@@ -114,33 +134,37 @@ export const store = new Vuex.Store({
             let queryString = `?startlat=${state.start.lat}&startlon=${state.start.lon}&endlat=${state.goal.lat}&endlon=${state.goal.lon}`
 
             const response = await fetch('http://localhost:8000/v1/route' + queryString)
-            if(!response.ok){
+            if (!response.ok) {
                 const myJson = await response.json();
-                context.commit("setNotification",myJson)
+                context.commit("setNotification", myJson)
                 return
             }
             const myJson = await response.json();
             context.commit("setRoute", myJson['Route'])
 
         },
-        requestWayWithStations(context, rangeKm) {
-            let state = context.state
+        async requestWayWithStations(context, rangeKm) {
+            const state = context.state
 
-            let queryString = `?startlat=${state.start.lat}&startlon=${state.start.lon}&endlat=${state.goal.lat}&endlon=${state.goal.lon}&rangeKm=${rangeKm}`
+            const queryString = `?startlat=${state.start.lat}&startlon=${state.start.lon}&endlat=${state.goal.lat}&endlon=${state.goal.lon}&rangeKm=${rangeKm}`
 
 
-            fetch('http://localhost:8000/v1/routewithstation' + queryString)
-                .then(function (response) {
-                    return response.json();
-                }).catch(error => console.log(error))
-                .then(function (myJson) {
-                    console.log(myJson)
-                    context.commit("setRoute", myJson['Route'])
-                });
+            const response = await fetch('http://localhost:8000/v1/routewithstation' + queryString)
+
+            if (!response.ok) {
+                const myJson = await response.json();
+                context.commit("setNotification", myJson)
+                return
+            }
+            const myJson = await response.json()
+
+            console.log(myJson)
+            context.commit("setRoute", myJson['Route'])
+
         },
         requestReachableStations(context) {
             // special case: reachable stations starting from "start"
-            let state = context.state
+            const state = context.state
             if (state.modus == "stationsReach") {
                 let queryString = `?startlat=${state.start.lat}&startlon=${state.start.lon}`
                 queryString += `&nelat=${state.bounds._northEast.lat}&nelon=${state.bounds._northEast.lng}&swlat=${state.bounds._southWest.lat}&swlon=${state.bounds._southWest.lng}`
@@ -152,25 +176,34 @@ export const store = new Vuex.Store({
                     });
             }
         },
-        requestMetaInfo(context) {
-            fetch('http://localhost:8000/v1/info').then(function (response) {
-                return response.json();
-            })
-                .then(function (myJson) {
-                    context.commit("setInfo", myJson)
-                });
+        async requestReachableArea(context) {
+            const state = context.state
+            // all routes in the area
+            let queryString = `?startlat=${state.start.lat}&startlon=${state.start.lon}`
+            queryString += `&nelat=${state.bounds._northEast.lat}&nelon=${state.bounds._northEast.lng}&swlat=${state.bounds._southWest.lat}&swlon=${state.bounds._southWest.lng}`
 
+            console.log(state.bounds)
+            if (state.layers.fullEdges) {
+                const response = await fetch('http://localhost:8000/v1/route/areareachable' + queryString)
+                const myJson = await response.json()
+                context.commit("setRouteArea", myJson)
+            }
 
+        },
+        async requestMetaInfo(context) {
+            const response = await fetch('http://localhost:8000/v1/info')
+            const myJson = await response.json()
+            context.commit("setInfo", myJson)
         },
         requestInfosArea(context) {
 
-
             let state = context.state
             let queryString = `?nelat=${state.bounds._northEast.lat}&nelon=${state.bounds._northEast.lng}&swlat=${state.bounds._southWest.lat}&swlon=${state.bounds._southWest.lng}`
-
-
+            if (state.modus == "stationsReach") {
+                return
+            }
             //stations in the area
-            if (state.layers.stations && state.modus !== "stationsReach") {
+            if (state.layers.stations) {
                 fetch('http://localhost:8000/v1/stations' + queryString).then((response) => { return response.json(); })
                     .then((myJson) => {
                         context.commit("setStations", myJson)
