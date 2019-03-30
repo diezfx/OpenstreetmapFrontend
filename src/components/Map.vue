@@ -95,6 +95,15 @@ export default {
     this.getInfosAreaOnEvent();
   },
   watch: {
+
+    modus(){
+      if(this.modus=="stationsReach"){
+        if (this.startGoalMarkerLayer.goal) {
+        this.map.removeLayer(this.startGoalMarkerLayer.goal);
+      }
+      }
+    },
+
     start() {
       if (this.startGoalMarkerLayer.start) {
         this.map.removeLayer(this.startGoalMarkerLayer.start);
@@ -106,7 +115,7 @@ export default {
     },
     goal() {
       if (this.startGoalMarkerLayer.goal) {
-        this.map.removeLayer(this.startGoalMarkerLayer.start);
+        this.map.removeLayer(this.startGoalMarkerLayer.goal);
       }
       const marker = L.marker([this.goal.lat, this.goal.lon]);
       marker.addTo(this.map);

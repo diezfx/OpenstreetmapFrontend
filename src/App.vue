@@ -3,7 +3,12 @@
     <FlashMessage/>
     <div class="container-fluid">
       <div class="container">
-        <TopBar v-on:click="calculate" msg="Welcome to Your Vue.js App"/>
+        <div v-if="modus === 'stationsReach'">
+          <TopBar />
+        </div>
+        <div v-else>
+          <HelloWorld/>
+        </div>
       </div>
       <div class="col-9">
         <Map/>
@@ -34,7 +39,11 @@ export default {
   data() {
     return {};
   },
-  computed: {},
+  computed: {
+    modus() {
+      return this.$store.state.modus;
+    }
+  },
   mounted() {}
 };
 </script>

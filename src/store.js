@@ -13,7 +13,8 @@ export const store = new Vuex.Store({
         //route 
         //routeReach route reachable with reach constraint
         //stationsReach all reachable stations from start
-        modus: "stationsReach",
+        modi:["route","stationsReach"],
+        modus: "route",
         layers: {
 
             fullEdges: true,
@@ -84,7 +85,7 @@ export const store = new Vuex.Store({
             }
 
             if (state.modus != "stationsReach") {
-                this.$store.commit("toggleSelected");
+                this.commit("toggleSelected")
               }
         },
 
@@ -108,6 +109,9 @@ export const store = new Vuex.Store({
 
         setNotification(state, noti) {
             state.notifications = noti
+        },
+        setModus(state,modus){
+            state.modus=modus
         }
 
     },

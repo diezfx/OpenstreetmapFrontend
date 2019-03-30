@@ -20,7 +20,29 @@
 
     <v-text-field label="Range in km (0=infinite)"  class="in-1 range" v-model="range"></v-text-field>
 
-    <button @click="clicked" class="btn-dark" id="buttonInput">Calculate</button>
+     <v-menu offset-y>
+      <template v-slot:activator="{ on }">
+        <v-btn
+          color="primary"
+          dark
+          v-on="on"
+          class="modus"
+        >
+          Modus
+        </v-btn>
+      </template>
+      <v-list>
+        <v-list-tile
+          v-for="(item, index) in modi"
+          :key="index"
+          @click="modusChange(item)"
+        >
+          <v-list-tile-title>{{ item }}</v-list-tile-title>
+        </v-list-tile>
+      </v-list>
+    </v-menu>
+
+    <v-btn @click="clicked" color="secondary" dark class="btn-dark" id="buttonInput">Calculate</v-btn>
   </div>
 </template>
 
@@ -34,6 +56,9 @@ export default {
     return { test: "huhu", range:0 };
   },
   computed: {
+    modi() {
+      return this.$store.state.modi;
+    },
     startLat: {
       get() {
         return this.$store.state.start.lat;
@@ -69,6 +94,9 @@ export default {
   },
 
   methods: {
+    modusChange(modus){
+      this.$store.commit("setModus",modus)
+    },
     clicked() {
       if (this.goalLon == "" || this.goalLat == "") {
         //todo fix
@@ -89,7 +117,7 @@ export default {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style>
+<style scoped>
 .route-input {
   display: grid;
   grid-template-columns: auto auto auto auto 100 px;
@@ -115,20 +143,24 @@ export default {
 
 .goal1 {
   align-self: center;
-  grid-area: "inputgl";
+  grid-area: inputgl;
 }
 .goal2 {
   align-self: center;
-  grid-area: "inputglo";
+  grid-area: inputglo;
 }
 .start1 {
-  grid-area: "inputslo";
+  grid-area: inputsl;
 }
 .start2 {
   grid-area: inputslo;
 }
 .range{
   grid-area:range;
+}
+
+.modus{
+  grid-area: input;
 }
 
 .in-1 {

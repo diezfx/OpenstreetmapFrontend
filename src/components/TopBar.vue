@@ -1,16 +1,37 @@
 <template>
   <div class="route-input">
-    <v-chip label disabled>Start</v-chip>
+    <v-chip label disabled class="start">Start</v-chip>
     <v-text-field label="Latitude" id="start1" class="in-1 start1" v-model="startLat"></v-text-field>
     <v-text-field label="Longitude" id="start2" class="in-1 start2" v-model="startLon"></v-text-field>
 
     <v-text-field label="Range in km (0=infinite)" class="in-1 range" v-model="range"></v-text-field>
 
+       <v-menu offset-y>
+      <template v-slot:activator="{ on }">
+        <v-btn class="modus"
+          color="primary"
+          dark
+          v-on="on"
+        >
+          Modus
+        </v-btn>
+      </template>
+      <v-list>
+        <v-list-tile
+          v-for="(item, index) in modi"
+          :key="index"
+          @click="modusChange(item)"
+        >
+          <v-list-tile-title>{{ item }}</v-list-tile-title>
+        </v-list-tile>
+      </v-list>
+    </v-menu>
+
     <v-btn @click="clicked" class="btn-dark" id="buttonInput">Calculate</v-btn>
   </div>
 </template>
 
-<script>
+<script scoped>
 export default {
   name: "Huhu",
   props: {
@@ -20,6 +41,9 @@ export default {
     return { test: "huhu", range: 0 };
   },
   computed: {
+    modi() {
+      return this.$store.state.modi;
+    },
     startLat: {
       get() {
         return this.$store.state.start.lat;
@@ -39,6 +63,9 @@ export default {
   },
 
   methods: {
+     modusChange(modus){
+      this.$store.commit("setModus",modus)
+    },
     clicked() {
 
 
@@ -80,19 +107,11 @@ export default {
   background-color: #009688 !important;
 }
 
-.goal1 {
-  align-self: center;
-  grid-area: "inputgl";
-}
-.goal2 {
-  align-self: center;
-  grid-area: "inputglo";
-}
 .start1 {
-  grid-area: "inputslo";
+  grid-area: inputslo;
 }
 .start2 {
-  grid-area: inputslo;
+  grid-area: inputglo;
 }
 .range {
   grid-area: range;
@@ -103,6 +122,11 @@ export default {
   padding: 2em;
 }
 
+.modus{
+  grid-area: input;
+  padding : 2rm
+}
+
 .btn-dark {
   background-color: #2c2e5a;
   margin-top: 1rem;
@@ -111,7 +135,6 @@ export default {
   vertical-align: middle;
   align-self: center;
 
-  height: 5rem;
   grid-area: button;
 }
 </style>
