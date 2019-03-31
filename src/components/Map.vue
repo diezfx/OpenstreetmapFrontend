@@ -34,6 +34,9 @@ export default {
     stations() {
       return this.$store.state.stations;
     },
+    routeStations(){
+      return this.$store.state.routeStations;
+    },
     routeArea() {
       return this.$store.state.routeArea;
     },
@@ -46,6 +49,7 @@ export default {
     return {
       routeLayer: null,
       stationLayer: null,
+      routeStationLayer:null,
       routeAreaLayer: null,
       startGoalMarkerLayer: { start: null, goal: null },
       map: null
@@ -95,6 +99,29 @@ export default {
     this.getInfosAreaOnEvent();
   },
   watch: {
+    routeStations(){
+      if(this.routeStations){
+        let marker=[]
+
+        for (let node of this.routeStations) {
+          let options;
+
+          options = { color: "#424ef4" };
+
+          options.radius = 15;
+          marker.push(L.circleMarker([node.lat, node.lon], options));
+          this.routeStationLayer=L.layerGroup(marker);
+          this.routeStationLayer.addTo(this.map);
+        }
+      }
+      else{
+        this.map.removeLayer(this.routeStationLayer)
+      }
+
+
+
+
+    },
 
     modus(){
       if(this.modus=="stationsReach"){
@@ -142,12 +169,6 @@ export default {
 
       let zoomLevel = this.map.getZoom();
 
-      // scale radius
-      const scale = zoomLevel - 7;
-      // max zoom is 18 ;min8    now 1,10
-
-      const radius = scale * 2;
-
       if (this.stations == null) return;
 
       if (this.layers.stations && this.modus === "stationsReach") {
@@ -180,7 +201,7 @@ export default {
             options = { color: "#f44141" };
           }
 
-          options.radius = 1;
+          options.radius = 10;
           marker.push(L.circleMarker([node.lat, node.lon], options));
         }
 
@@ -199,7 +220,9 @@ export default {
         this.routeAreaLayer = L.geoJSON(this.routeArea, {
           style: function(feature) {
             console.log(feature);
-            return { color: feature.geometry.style.color };
+             if (feature.geometry.style){
+           return {color: feature.geometry.style.color} 
+             }
           }
         }).addTo(this.map);
       }

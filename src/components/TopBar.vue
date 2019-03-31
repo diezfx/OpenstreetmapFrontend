@@ -6,14 +6,14 @@
 
     <v-text-field label="Range in km (0=infinite)" class="in-1 range" v-model="range"></v-text-field>
 
-       <v-menu offset-y>
+       <v-menu >
       <template v-slot:activator="{ on }">
         <v-btn class="modus"
           color="primary"
           dark
           v-on="on"
         >
-          Modus
+          {{modus}}
         </v-btn>
       </template>
       <v-list>
@@ -44,6 +44,9 @@ export default {
     modi() {
       return this.$store.state.modi;
     },
+    modus(){
+      return this.$store.state.modus;
+    },
     startLat: {
       get() {
         return this.$store.state.start.lat;
@@ -64,19 +67,24 @@ export default {
 
   methods: {
      modusChange(modus){
+       
       this.$store.commit("setModus",modus)
     },
     clicked() {
 
-
-      if (this.goalLon == "" || this.goalLat == "") {
-        //todo fix
-        this.$store.map.panTo([this.startLat, this.startLon]);
-      } else {
         this.$store.commit("calcClicked");
+
+        console.log(this.range)
+
+        if(this.range<=0){
         this.$store.dispatch("requestReachableStations");
         this.$store.dispatch("requestReachableArea");
-      }
+        }
+        else{
+          this.$store.dispatch("requestReachableStationsRange",this.range)
+          this.$store.dispatch("requestReachableAreaRange",this.range)
+        }
+      
     }
   }
 };

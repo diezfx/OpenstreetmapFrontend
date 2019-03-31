@@ -28,7 +28,7 @@
           v-on="on"
           class="modus"
         >
-          Modus
+          {{modus}}
         </v-btn>
       </template>
       <v-list>
@@ -56,6 +56,9 @@ export default {
     return { test: "huhu", range:0 };
   },
   computed: {
+     modus(){
+      return this.$store.state.modus;
+    },
     modi() {
       return this.$store.state.modi;
     },
@@ -77,6 +80,7 @@ export default {
     },
     goalLat: {
       get() {
+        console.log("2test")
         return this.$store.state.goal.lat;
       },
       set(v) {

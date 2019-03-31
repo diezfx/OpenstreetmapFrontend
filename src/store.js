@@ -13,7 +13,7 @@ export const store = new Vuex.Store({
         //route 
         //routeReach route reachable with reach constraint
         //stationsReach all reachable stations from start
-        modi:["route","stationsReach"],
+        modi: ["route", "stationsReach"],
         modus: "route",
         layers: {
 
@@ -35,13 +35,19 @@ export const store = new Vuex.Store({
         calcClicked: 0,
         route: null,
         routeStations: null,
+        routeCosts: null,
         info: null,
         stations: null,
         routeArea: null,
-        notifications: { Title: "hallo" }
+        notifications: {
+            Title: "hallo"
+        }
     },
     mutations: {
-        changeStart(state, { lat, lon }) {
+        changeStart(state, {
+            lat,
+            lon
+        }) {
             if (lat != null) {
                 state.start.lat = lat
             }
@@ -49,7 +55,10 @@ export const store = new Vuex.Store({
                 state.start.lon = lon
         },
 
-        changeGoal(state, { lat, lon }) {
+        changeGoal(state, {
+            lat,
+            lon
+        }) {
             if (lat != null)
                 state.goal.lat = lat
             if (lon != null)
@@ -70,8 +79,7 @@ export const store = new Vuex.Store({
         toggleSelected(state) {
             if (state.selected === "start") {
                 state.selected = "goal"
-            }
-            else {
+            } else {
                 state.selected = "start"
             }
 
@@ -79,23 +87,30 @@ export const store = new Vuex.Store({
         setSelected(state, coords) {
             if (state.selected === "start") {
                 state.start = coords
-            }
-            else {
+            } else {
                 state.goal = coords
             }
 
             if (state.modus != "stationsReach") {
                 this.commit("toggleSelected")
-              }
+            }
         },
 
-        setRoute(state, newRoute) {
+        setRoute(state, route) {
 
-            state.route = newRoute
+            console.log(route)
+            state.route = route.Route;
+            state.routeCosts = route.TotalCost
+
+
         },
-        setRouteWithStations(state, newRoute, stations) {
-            state.route = newRoute;
-            state.routeStations = stations;
+        setRouteWithStations(state, route) {
+            console.log(route)
+            state.route = route.Route;
+            state.routeStations = route.Stations;
+            state.routeCosts = route.TotalCost
+
+
         },
         setInfo(state, newInfo) {
             state.info = newInfo
@@ -110,26 +125,29 @@ export const store = new Vuex.Store({
         setNotification(state, noti) {
             state.notifications = noti
         },
-        setModus(state,modus){
-            state.modus=modus
+        setModus(state, modus) {
+            state.modus = modus
+            if (modus === "stationsReach") {
+                this.selected = "start"
+            }
         }
 
     },
     actions: {
 
-        async setStartGoal(context,coords){
+        async setStartGoal(context, coords) {
 
 
             const queryString = `?lat=${coords.lat}&lon=${coords.lon}`
 
-            const response = await fetch('http://localhost:8000/v1/route/node'+queryString)
+            const response = await fetch('http://localhost:8000/v1/route/node' + queryString)
             if (!response.ok) {
                 const myJson = await response.json();
                 context.commit("setNotification", myJson)
                 return
             }
-            const myJson=await response.json();
-            context.commit("setSelected",myJson)
+            const myJson = await response.json();
+            context.commit("setSelected", myJson)
         },
         async requestWay(context) {
 
@@ -143,8 +161,11 @@ export const store = new Vuex.Store({
                 context.commit("setNotification", myJson)
                 return
             }
+
             const myJson = await response.json();
-            context.commit("setRoute", myJson['Route'])
+
+
+            context.commit("setRoute", myJson)
 
         },
         async requestWayWithStations(context, rangeKm) {
@@ -163,7 +184,7 @@ export const store = new Vuex.Store({
             const myJson = await response.json()
 
             console.log(myJson)
-            context.commit("setRoute", myJson['Route'])
+            context.commit("setRouteWithStations", myJson)
 
         },
         requestReachableStations(context) {
@@ -173,12 +194,45 @@ export const store = new Vuex.Store({
                 let queryString = `?startlat=${state.start.lat}&startlon=${state.start.lon}`
                 queryString += `&nelat=${state.bounds._northEast.lat}&nelon=${state.bounds._northEast.lng}&swlat=${state.bounds._southWest.lat}&swlon=${state.bounds._southWest.lng}`
                 fetch('http://localhost:8000/v1/reachablestations' + queryString).then(function (response) {
-                    return response.json();
-                })
+                        return response.json();
+                    })
                     .then(function (myJson) {
                         context.commit("setStations", myJson)
                     });
             }
+        },
+        async requestReachableStationsRange(context, range) {
+
+            const state = context.state
+            // all routes in the area
+            let queryString = `?startlat=${state.start.lat}&startlon=${state.start.lon}`
+            queryString += `&nelat=${state.bounds._northEast.lat}&nelon=${state.bounds._northEast.lng}&swlat=${state.bounds._southWest.lat}&swlon=${state.bounds._southWest.lng}`
+            queryString += `&rangeKm=${range}`
+
+            
+            if (state.layers.fullEdges) {
+                const response = await fetch('http://localhost:8000/v1/reachablestations' + queryString)
+                const myJson = await response.json()
+                console.log(myJson)
+                context.commit("setStations", myJson)
+            }
+
+
+        },
+        async requestReachableAreaRange(context, range) {
+            const state = context.state
+            // all routes in the area
+            let queryString = `?startlat=${state.start.lat}&startlon=${state.start.lon}`
+            queryString += `&nelat=${state.bounds._northEast.lat}&nelon=${state.bounds._northEast.lng}&swlat=${state.bounds._southWest.lat}&swlon=${state.bounds._southWest.lng}`
+            queryString += `&rangeKm=${range}`
+
+            console.log(state.bounds)
+            if (state.layers.fullEdges) {
+                const response = await fetch('http://localhost:8000/v1/route/areareachable' + queryString)
+                const myJson = await response.json()
+                context.commit("setRouteArea", myJson)
+            }
+
         },
         async requestReachableArea(context) {
             const state = context.state
@@ -208,7 +262,9 @@ export const store = new Vuex.Store({
             }
             //stations in the area
             if (state.layers.stations) {
-                fetch('http://localhost:8000/v1/stations' + queryString).then((response) => { return response.json(); })
+                fetch('http://localhost:8000/v1/stations' + queryString).then((response) => {
+                        return response.json();
+                    })
                     .then((myJson) => {
                         context.commit("setStations", myJson)
                     })
@@ -216,7 +272,9 @@ export const store = new Vuex.Store({
 
             // all routes in the area
             if (state.layers.fullEdges) {
-                fetch('http://localhost:8000/v1/route/area' + queryString).then((response) => { return response.json(); })
+                fetch('http://localhost:8000/v1/route/area' + queryString).then((response) => {
+                        return response.json();
+                    })
                     .then((myJson) => {
                         context.commit("setRouteArea", myJson)
                     })
